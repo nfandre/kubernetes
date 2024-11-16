@@ -44,7 +44,7 @@ kubectl describe deployment goserver
 
 ## Rollout and Revisions
 
-kubernetes kubectl rollout history deployment `deployment name`
+kubectl rollout history deployment `deployment name`
 
 kubectl rollout undo deployment goserver 
 
@@ -52,6 +52,40 @@ kubectl rollout undo deployment `deployment name` --to-revision=1
 
 
 ## Service ("Load balancer")
+
+Types:
+- ClusterIp - gera ip interno
+- NodePort - gera ip acessível para acesso de fora do k8s
+  > forma "Arcaica", é possível configurar um range de porta para um service
+```yaml
+    - name: goserver-service
+    port: 80
+    protocol: TCP
+    nodePort: 30001
+``` 
+  
+- LoadBalancer
+ > Possui ClusterIp, nodePort, Ip exclusivo
+- Headless service
+
+kubectl apply -f k8s/service.yaml
+
+kubectl get services 
+> kubectl get svc
+
+kubectl port-forward svc/goserver-service 8000:80
+
+### Target port vs Port
+targetPort: Porta do container
+port: Porta da service
+
+
+## Proxy para API Kubernetes
+kubectl proxy --port=8080
+
+http://localhost:8080/api/v1
+
+http://localhost:8080/api/v1/namespaces/default/services/goserver-service
 
 ## Info
 Todas configs ficam na pasta Kube/config
@@ -65,6 +99,8 @@ kubectl config use-context `cluster name`
 ## Kind
 
 kind create cluster
+
+kind create cluster --config=k8s/kind.yaml --name=fullcycle
 
 kind delete
 
