@@ -162,6 +162,7 @@ kubectl exec -it goserver-64c9454db8-4bxr8  -- bash
 kubectl logs goserver-64c9454db8-4bxr8 
 
 ### Secrets
+File config secret
 ```yaml
   apiVersion: v1
   kind: Secret
@@ -172,6 +173,8 @@ kubectl logs goserver-64c9454db8-4bxr8
     USER: "d2VzbGV5Cg=="
     PASSWORD: "MTIzNDU2Cg=="
 ```
+
+kubectl apply -f k8s/secret.yaml
 
 
 ## Proxy para API Kubernetes
