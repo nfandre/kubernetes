@@ -125,6 +125,8 @@ Using envFrom (set all keys on environments variables):
 
 kubectl apply -f k8s/configmap-env.yaml
 
+kubectl apply -f k8s/configmap-family.yaml
+
 ### Inject ConfigMap on application (transform configmap using volume)
 ```yaml
   apiVersion: v1
@@ -157,9 +159,9 @@ Config deployment
                 path: "family.txt"
 ```
 
-kubectl exec -it goserver-64c9454db8-4bxr8  -- bash
+kubectl exec -it goserver-d7ffb8769-w8phb   -- bash
 
-kubectl logs goserver-64c9454db8-4bxr8 
+kubectl logs goserver-d7ffb8769-w8phb 
 
 ### Secrets
 File config secret
@@ -176,6 +178,49 @@ File config secret
 
 kubectl apply -f k8s/secret.yaml
 
+## Probes (Health check, Liveness e readiness)
+
+### Liveness Probe
+Types: HTTP, COMMAND and TCP
+```yaml
+  spec:
+  containers:
+    - name: goserver
+      image: nfandre/hello-go:v5.5
+      livenessProbe:
+        httpGet:
+          path: /healthz
+          port: 8000 #container port
+        periodSeconds: 5
+        failureThreshold: 3
+        timeoutSeconds: 1
+        successThreshold: 1
+```
+
+kubectl apply -f k8s/deployment.yaml && watch -n1 kubectl get pods
+
+### Readiness Probe
+Verify when  application is ready to receive traffic
+
+```yaml
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: 8000 #container port
+    periodSeconds: 3
+    initialDelaySeconds: 10
+```
+
+### Startup Probe
+
+```yaml
+  startupProbe:
+    httpGet:
+      path: /healthz
+      port: 8000
+    periodSeconds: 3
+    failureThreshold: 30
+```
 
 ## Proxy para API Kubernetes
 kubectl proxy --port=8080
@@ -198,6 +243,8 @@ kubectl config use-context `cluster name`
 kind create cluster
 
 kind create cluster --config=k8s/kind.yaml --name=fullcycle
+
+kubectl cluster-info --context kind-fullcycle
 
 kind delete
 
@@ -222,3 +269,5 @@ docker push nfandre/hello-go
 ## Utils
 
 echo "andre" | base64
+
+brew install watch

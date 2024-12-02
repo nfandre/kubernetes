@@ -6,9 +6,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
+var startedAt = time.Now()
+
 func main() {
+	http.HandleFunc("/healthz", Healthz)
 	http.HandleFunc("/secret", Secret)
 	http.HandleFunc("/configmap", ConfigMap)
 	http.HandleFunc("/", Hello)
@@ -40,4 +44,18 @@ func ConfigMap(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "My Family, %s.", string(data))
 
 	// w.Write([]byte("<h1> Hello World !!!!! </h1>"))
+}
+
+func Healthz(w http.ResponseWriter, r *http.Request) {
+
+	duration := time.Since(startedAt)
+
+	if duration.Seconds() < 10 {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf("Duration: %v", duration.Seconds())))
+	} else {
+		w.WriteHeader(200)
+		w.Write([]byte("ok"))
+	}
+
 }

@@ -5,7 +5,7 @@ metadata:
   labels:
     app: goserver
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: goserver
@@ -16,7 +16,30 @@ spec:
     spec:
       containers:
         - name: goserver
-          image: nfandre/hello-go:v5.3
+          image: nfandre/hello-go:v5.6
+
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            periodSeconds: 3
+            failureThreshold: 30
+
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000 #container port
+            periodSeconds: 3
+            # initialDelaySeconds: 10
+          
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000 #container port
+            periodSeconds: 5
+            failureThreshold: 3
+            timeoutSeconds: 1
+            successThreshold: 1
           envFrom:
             - configMapRef:
                 name: goserver-env
