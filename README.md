@@ -163,6 +163,9 @@ kubectl exec -it goserver-d7ffb8769-w8phb   -- bash
 
 kubectl logs goserver-d7ffb8769-w8phb 
 
+kubectl get events --sort-by=.metadata.creationTimestamp
+
+
 ### Secrets
 File config secret
 ```yaml
@@ -181,6 +184,8 @@ kubectl apply -f k8s/secret.yaml
 ## Probes (Health check, Liveness e readiness)
 
 ### Liveness Probe
+It checks if the container is health periodically 
+
 Types: HTTP, COMMAND and TCP
 ```yaml
   spec:
@@ -222,8 +227,48 @@ Verify when  application is ready to receive traffic
     failureThreshold: 30
 ```
 
+## Resource e Horizontal Pod Autoscaling (HPA)
+
+### Install Metrics-server
+repo: https://github.com/kubernetes-sigs/metrics-server
+
+wget https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+add insecure tls to run on kind:
+> --kubelet-insecure-tls
+
+
+### Kubernetes Api server
+kubectl get apiservices
+
+### Deployments com Resources (cpy/ memory)
+
+kubectl top pod goserver-68d4cc46b-k7v7s
+
+### HPA with CPU
+```yaml
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: goserver-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    name: goserver
+    kind: Deployment
+  minReplicas: 1
+  maxReplicas: 30
+  targetCPUUtilizationPercentage: 25
+```
+
+kubectl apply -f k8s/hpa.yaml
+
+kubetl get hpa
+
 ## Proxy para API Kubernetes
 kubectl proxy --port=8080
+
+kubectl port-forward deployment/goserver 8000:80
 
 http://localhost:8080/api/v1
 
@@ -271,3 +316,6 @@ docker push nfandre/hello-go
 echo "andre" | base64
 
 brew install watch
+
+brew install wget
+

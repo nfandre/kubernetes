@@ -16,30 +16,40 @@ spec:
     spec:
       containers:
         - name: goserver
-          image: nfandre/hello-go:v5.6
+          image: "nfandre/hello-go:latest"
+
+          resources:
+            requests: ## Minimo -> Reservando recursos do cluster para o POD
+              cpu: "0.3" ## 1 vCPU -> 1000M (milicores) 500m. 0.5
+              memory: 20Mi
+            limits: 
+              cpu: "0.3"
+              memory: 25Mi
 
           startupProbe:
             httpGet:
               path: /healthz
-              port: 8000
+              port: 8009
             periodSeconds: 3
             failureThreshold: 30
 
           readinessProbe:
             httpGet:
               path: /healthz
-              port: 8000 #container port
+              port: 8009
             periodSeconds: 3
+            failureThreshold: 1
             # initialDelaySeconds: 10
-          
+
           livenessProbe:
             httpGet:
               path: /healthz
-              port: 8000 #container port
+              port: 8009
             periodSeconds: 5
-            failureThreshold: 3
+            failureThreshold: 1
             timeoutSeconds: 1
             successThreshold: 1
+            # initialDelaySeconds: 15
           envFrom:
             - configMapRef:
                 name: goserver-env
